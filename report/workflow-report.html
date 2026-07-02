@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workflow Report — Kanban with Comments &amp; @Mentions</title>
+<style>
+  :root { --ink:#1f2933; --muted:#61707d; --line:#e2e8f0; --accent:#2563eb; --ok:#15803d; --bg:#f8fafc; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+         color:var(--ink); line-height:1.55; background:#fff; }
+  header { background:var(--ink); color:#fff; padding:32px 40px; }
+  header h1 { margin:0 0 6px; font-size:26px; }
+  header p { margin:0; color:#c7d2e0; font-size:14px; }
+  main { max-width:900px; margin:0 auto; padding:32px 40px 64px; }
+  section { margin:0 0 40px; }
+  h2 { font-size:19px; border-bottom:2px solid var(--line); padding-bottom:8px; margin:0 0 16px;
+       display:flex; align-items:center; gap:10px; }
+  h2 .n { background:var(--accent); color:#fff; font-size:13px; width:24px; height:24px; border-radius:50%;
+          display:inline-flex; align-items:center; justify-content:center; flex:none; }
+  table { border-collapse:collapse; width:100%; font-size:14px; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { background:var(--bg); font-weight:600; }
+  .pass { color:var(--ok); font-weight:600; }
+  code, pre { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+  pre { background:#0f172a; color:#e2e8f0; padding:16px 18px; border-radius:8px; overflow-x:auto;
+        font-size:12.5px; line-height:1.5; }
+  pre .t { color:#7dd3fc; } pre .f { color:#86efac; } pre .c { color:#fca5a5; } pre .d { color:#cbd5e1; }
+  figure { margin:18px 0; }
+  figure img { width:100%; border:1px solid var(--line); border-radius:8px; display:block; }
+  figcaption { font-size:13px; color:var(--muted); margin-top:6px; }
+  a { color:var(--accent); }
+  .grid { display:grid; gap:8px; }
+  .muted { color:var(--muted); font-size:13px; }
+  ul { margin:8px 0; padding-left:22px; }
+  li { margin:4px 0; }
+  .tag { display:inline-block; background:var(--bg); border:1px solid var(--line); border-radius:6px;
+         padding:2px 8px; font-size:12px; margin:2px 4px 2px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Workflow Report — Kanban with Comments &amp; @Mentions</h1>
+  <p>Track 1 (Beginner) · FastAPI + SQLModel + JWT starter · Built with Claude Code, TDD end-to-end</p>
+</header>
+<main>
+
+  <section>
+    <h2><span class="n">1</span> Agents &amp; plugins used</h2>
+    <p>The workflow was run through Claude Code with an explicit phase-by-phase discipline.
+       Each tool was chosen to match the phase it served:</p>
+    <table>
+      <thead><tr><th>Tool / agent</th><th>Phase</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td><code>/init</code></td><td>CLAUDE.md</td>
+            <td>Scanned the repo and drafted a project CLAUDE.md. Output was reviewed line by line and
+                trimmed — boilerplate removed, project-specific quirks added (see notes).</td></tr>
+        <tr><td>Plan mode / planning subagent</td><td>Plan</td>
+            <td>Broke the work into numbered, time-estimated steps and flagged the riskiest ones
+                (mention parser, notification creation, transitive card ownership) before any code.</td></tr>
+        <tr><td>General-purpose subagent</td><td>Architecture</td>
+            <td>Produced the technical architecture doc — ER model, endpoints table, state-flow narrative,
+                and explicit tradeoffs.</td></tr>
+        <tr><td>Claude Code (main)</td><td>TDD implementation</td>
+            <td>Drove the failing-test-first loop for each target: write the test, run it, watch it fail,
+                then implement. One target at a time to keep the git history honest.</td></tr>
+      </tbody>
+    </table>
+    <p class="muted">No third-party plugins (superpowers / cavern) were installed; the architecture phase
+       used a subagent instead, which the assignment permits.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span> Design &amp; planning docs</h2>
+    <ul>
+      <li><a href="../design/design-brief.md">design/design-brief.md</a> — wireframes, component list, user flows</li>
+      <li><a href="../docs/plan.md">docs/plan.md</a> — 11 numbered steps, time estimates, risk flags</li>
+      <li><a href="../docs/architecture.md">docs/architecture.md</a> — ER diagram, endpoints, state flow, tradeoffs</li>
+      <li><a href="../docs/claude-md-manual/CLAUDE.md">docs/claude-md-manual/</a> and
+          <a href="../docs/claude-md-init/CLAUDE.md">docs/claude-md-init/</a> — CLAUDE.md (manual + /init)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span> Test results</h2>
+    <p><strong>22 tests, all passing.</strong> Required TDD targets covered: mention parsing
+       (regex + user lookup), notification creation, and board/column/card CRUD authorization.</p>
+    <table>
+      <thead><tr><th>Suite</th><th>Focus</th><th>Tests</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>test_mentions.py</td><td>Mention parser (incl. email edge case)</td><td>5</td><td class="pass">PASS</td></tr>
+        <tr><td>test_notifications.py</td><td>Mention→notification, unread count, mark read, user lookup</td><td>5</td><td class="pass">PASS</td></tr>
+        <tr><td>test_boards.py</td><td>Board ownership authorization (404 not 403)</td><td>1</td><td class="pass">PASS</td></tr>
+        <tr><td>test_cards.py</td><td>Column + card transitive ownership</td><td>1</td><td class="pass">PASS</td></tr>
+        <tr><td>test_ui.py</td><td>Cookie auth, HTML pages, comment form, feed</td><td>9</td><td class="pass">PASS</td></tr>
+        <tr><td>test_tasks.py</td><td>Starter auth + task CRUD (regression)</td><td>1</td><td class="pass">PASS</td></tr>
+      </tbody>
+    </table>
+    <figure>
+      <img src="img/tests.png" alt="Terminal showing pytest run with all tests passing">
+      <figcaption>Terminal after <code>pytest -v</code> — full suite green.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span> Git log excerpt</h2>
+    <p class="muted">Each feature was committed as a failing <code>test:</code> then its <code>feat:</code> —
+       the tests-first pattern is visible top to bottom.</p>
+<pre><span class="f">9b593e5</span> <span class="d">feat: add boards list, create board, and add-column/card forms</span>
+<span class="t">b1fd884</span> <span class="d">test: failing tests for boards list, create, and add forms</span>
+<span class="f">cfb20f4</span> <span class="d">feat: add server-rendered UI templates and cookie auth</span>
+<span class="t">039d0c1</span> <span class="d">test: failing tests for server-rendered UI</span>
+<span class="f">ab115f8</span> <span class="d">feat: mark notifications read and expose unread count</span>
+<span class="t">6d9acf4</span> <span class="d">test: failing test for notification read + unread count</span>
+<span class="f">fab658b</span> <span class="d">feat: create notifications when a comment mentions a user</span>
+<span class="t">10becb2</span> <span class="d">test: failing test for notification creation on mention</span>
+<span class="f">ca1636c</span> <span class="d">feat: implement column and card CRUD with transitive ownership</span>
+<span class="t">d31ca41</span> <span class="d">test: failing test for column and card ownership authorization</span>
+<span class="f">521c3e0</span> <span class="d">feat: implement board CRUD with ownership authorization</span>
+<span class="t">8e39590</span> <span class="d">test: failing test for board ownership authorization</span>
+<span class="t">4b03fc1</span> <span class="d">test: failing test for mention parser</span>
+<span class="d">17e7364 docs: add architecture (ER diagram, endpoints, state flow, tradeoffs)</span>
+<span class="d">48beeda docs: add implementation plan with risk flags</span>
+<span class="d">44ac512 docs: add design brief (wireframes, components, user flows)</span>
+<span class="d">c3b826d docs: add CLAUDE.md for repo guidance</span>
+<span class="c">2e84234 chore: fix fresh-clone deps (pin pydantic 2.9.2, bcrypt 4.3.0); green test suite</span></pre>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span> Built UI</h2>
+    <figure>
+      <img src="img/board.png" alt="Board view with columns and cards">
+      <figcaption>Board view — columns with cards and the nav-bar unread count.</figcaption>
+    </figure>
+    <figure>
+      <img src="img/mention.png" alt="Card detail showing a comment with an @mention rendered as a link">
+      <figcaption>Card detail — a comment with <code>@nico</code> rendered as a link to the user's profile.</figcaption>
+    </figure>
+    <figure>
+      <img src="img/notifications.png" alt="Notifications feed showing an unread mention">
+      <figcaption>Notifications feed — unread mention, click marks it read and opens the source card.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2><span class="n">6</span> Reflection</h2>
+    <p>The biggest surprise was that the "fresh clone" was broken before any feature work began:
+       the starter left <code>pydantic</code> and <code>bcrypt</code> unpinned, so pip pulled versions too new
+       for SQLModel 0.0.22 and passlib 1.7.4, and the app wouldn't even boot. Pinning both (2.9.2 / 4.3.0)
+       and matching Python 3.12 fixed it — and that quirk became the most valuable line in the project CLAUDE.md,
+       exactly the kind a fresh model could never guess. The TDD loop paid off most on the mention parser, where
+       forcing an email-address edge case into the failing test first meant the naive <code>@(\w+)</code> regex
+       never survived. If I did it again I'd use <code>git add -A</code> rather than <code>git commit -am</code>
+       from the start, since <code>-am</code> silently skipped new files and briefly left implementation code
+       out of its intended <code>feat:</code> commit.</p>
+  </section>
+
+  <p class="muted">Generated for Track 1 (Beginner) · Kanban with Comments &amp; @Mentions.</p>
+</main>
+</body>
+</html>

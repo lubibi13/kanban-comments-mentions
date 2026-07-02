@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ card.title }}{% endblock %}
+{% block content %}
+<h1>{{ card.title }}</h1>
+
+<label>Move to column
+    <select data-card-id="{{ card.id }}" onchange="moveCard(this)">
+        <option value="">&hellip;</option>
+        {% for other in other_columns %}
+        <option value="{{ other.id }}">{{ other.title }}</option>
+        {% endfor %}
+    </select>
+</label>
+
+<h2>Comments</h2>
+{% for comment in comments %}
+<div class="comment">
+    <strong>{{ authors[comment.user_id].username }}</strong>
+    <p>{{ comment.body | linkify_mentions }}</p>
+</div>
+{% endfor %}
+
+<form class="comment-form" method="post" action="/cards/{{ card.id }}/comments/form">
+    <textarea name="body" required></textarea>
+    <button type="submit">Comment</button>
+</form>
+
+<script>
+function moveCard(select) {
+    var columnId = select.value;
+    if (!columnId) return;
+    fetch("/cards/" + select.dataset.cardId, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ column_id: parseInt(columnId, 10) })
+    }).then(function () {
+        window.location.reload();
+    });
+}
+</script>
+{% endblock %}

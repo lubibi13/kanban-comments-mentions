@@ -7,3 +7,6 @@ app.db
 *.egg-info
 dist/
 build/
+
+.claude/
+app.db

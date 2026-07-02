@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ board.title }}{% endblock %}
+{% block content %}
+<h1>{{ board.title }}</h1>
+<div class="board">
+    {% for column in columns %}
+    <div class="column">
+        <h3>{{ column.title }}</h3>
+        {% for card in cards_by_column.get(column.id, []) %}
+        <div class="card">
+            <a href="/cards/{{ card.id }}">{{ card.title }}</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

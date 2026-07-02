@@ -44,7 +44,8 @@ def register(payload: UserCreate, session: Session = Depends(get_session)):
     existing = session.exec(select(User).where(User.email == payload.email)).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
-    user = User(email=payload.email, hashed_password=hash_password(payload.password))
+    username = payload.email.split("@")[0]
+    user = User(email=payload.email, username=username, hashed_password=hash_password(payload.password))
     session.add(user)
     session.commit()
     session.refresh(user)

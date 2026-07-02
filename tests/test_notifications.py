@@ -67,8 +67,8 @@ def test_comment_mentioning_unknown_user_creates_no_notification(client):
 
 
 def test_find_mentioned_users_returns_known_and_skips_unknown(session):
-    alice = User(email="alice@example.com", hashed_password="x")
-    bob = User(email="bob@example.com", hashed_password="x")
+    alice = User(email="alice@example.com", username="alice", hashed_password="x")
+    bob = User(email="bob@example.com", username="bob", hashed_password="x")
     session.add(alice)
     session.add(bob)
     session.commit()

@@ -11,6 +11,7 @@ class TaskStatus(str, Enum):
 class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     email: str = Field(index=True, unique=True)
+    username: str = Field(index=True, unique=True)
     hashed_password: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
     tasks: List["Task"] = Relationship(back_populates="user")
@@ -50,6 +51,21 @@ class Card(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     column: Optional[Column] = Relationship(back_populates="cards")
 
+class Comment(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    card_id: int = Field(foreign_key="card.id")
+    user_id: int = Field(foreign_key="user.id")
+    body: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class Notification(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    type: str = Field(default="mention")
+    comment_id: Optional[int] = Field(default=None, foreign_key="comment.id")
+    read: bool = Field(default=False)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
 # API schemas (non-table)
 class UserCreate(SQLModel):
     email: str
@@ -58,6 +74,7 @@ class UserCreate(SQLModel):
 class UserRead(SQLModel):
     id: int
     email: str
+    username: str
     created_at: datetime
 
 class Token(SQLModel):
@@ -115,4 +132,21 @@ class CardRead(SQLModel):
     id: int
     column_id: int
     title: str
+    created_at: datetime
+
+class CommentCreate(SQLModel):
+    body: str
+
+class CommentRead(SQLModel):
+    id: int
+    card_id: int
+    user_id: int
+    body: str
+    created_at: datetime
+
+class NotificationRead(SQLModel):
+    id: int
+    type: str
+    comment_id: Optional[int]
+    read: bool
     created_at: datetime

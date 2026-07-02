@@ -14,6 +14,7 @@ class User(SQLModel, table=True):
     hashed_password: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
     tasks: List["Task"] = Relationship(back_populates="user")
+    boards: List["Board"] = Relationship(back_populates="user")
 
 class Task(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -23,6 +24,13 @@ class Task(SQLModel, table=True):
     status: TaskStatus = Field(default=TaskStatus.todo)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     user: Optional[User] = Relationship(back_populates="tasks")
+
+class Board(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    title: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    user: Optional[User] = Relationship(back_populates="boards")
 
 # API schemas (non-table)
 class UserCreate(SQLModel):
@@ -53,4 +61,15 @@ class TaskRead(SQLModel):
     title: str
     description: Optional[str]
     status: TaskStatus
+    created_at: datetime
+
+class BoardCreate(SQLModel):
+    title: str
+
+class BoardUpdate(SQLModel):
+    title: Optional[str] = None
+
+class BoardRead(SQLModel):
+    id: int
+    title: str
     created_at: datetime

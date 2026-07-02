@@ -11,7 +11,15 @@
             <a href="/cards/{{ card.id }}">{{ card.title }}</a>
         </div>
         {% endfor %}
+        <form method="post" action="/columns/{{ column.id }}/cards/form">
+            <input type="text" name="title" placeholder="New card" required>
+            <button type="submit">Add card</button>
+        </form>
     </div>
     {% endfor %}
 </div>
+<form method="post" action="/boards/{{ board.id }}/columns/form">
+    <input type="text" name="title" placeholder="New column" required>
+    <button type="submit">Add column</button>
+</form>
 {% endblock %}

@@ -28,26 +28,34 @@ def create_access_token(sub: str, expires_delta: Optional[timedelta] = None) -> 
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
+def _resolve_user(raw_token: Optional[str], session: Session) -> Optional[User]:
+    if raw_token is None:
+        return None
+    try:
+        payload = jwt.decode(raw_token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: Optional[str] = payload.get("sub")
+        if email is None:
+            return None
+    except JWTError:
+        return None
+    return session.exec(select(User).where(User.email == email)).first()
+
 def get_current_user(
     token: Optional[str] = Depends(oauth2_scheme),
     access_token: Optional[str] = Cookie(default=None),
     session: Session = Depends(get_session),
 ) -> User:
-    credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Authenticate": "Bearer"})
-    raw_token = token or access_token
-    if raw_token is None:
-        raise credentials_exception
-    try:
-        payload = jwt.decode(raw_token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: Optional[str] = payload.get("sub")
-        if email is None:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
-    user = session.exec(select(User).where(User.email == email)).first()
+    user = _resolve_user(token or access_token, session)
     if user is None:
-        raise credentials_exception
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Authenticate": "Bearer"})
     return user
+
+def get_optional_user(
+    token: Optional[str] = Depends(oauth2_scheme),
+    access_token: Optional[str] = Cookie(default=None),
+    session: Session = Depends(get_session),
+) -> Optional[User]:
+    return _resolve_user(token or access_token, session)
 
 @router.post("/register", response_model=UserRead, status_code=201)
 def register(payload: UserCreate, session: Session = Depends(get_session)):

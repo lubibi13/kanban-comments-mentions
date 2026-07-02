@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi.responses import RedirectResponse
 from sqlmodel import Session, select
 from app.db import get_session
 from app.models import Board, Card, CardCreate, CardRead, CardUpdate, Column, Comment, User
@@ -27,6 +28,12 @@ def create_card(column_id: int, payload: CardCreate, session: Session = Depends(
     session.commit()
     session.refresh(card)
     return card
+
+@router.post("/columns/{column_id}/cards/form")
+def create_card_form(column_id: int, title: str = Form(...), session: Session = Depends(get_session), user: User = Depends(get_current_user)):
+    column = get_owned_column(column_id, session, user)
+    create_card(column_id, CardCreate(title=title), session=session, user=user)
+    return RedirectResponse(url=f"/boards/{column.board_id}", status_code=303)
 
 @router.get("/cards/{card_id}")
 def card_detail(card_id: int, request: Request, session: Session = Depends(get_session), user: User = Depends(get_current_user)):

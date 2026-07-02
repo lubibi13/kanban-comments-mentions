@@ -66,6 +66,53 @@ def test_comment_mentioning_unknown_user_creates_no_notification(client):
     assert r.json() == []
 
 
+def test_unread_count_and_mark_read(client):
+    headers_a = register_and_login(client, "a@example.com", "s3cret123")
+    headers_b = register_and_login(client, "b@example.com", "s3cret123")
+    card_a_id = create_card(client, headers_a)
+    card_b_id = create_card(client, headers_b)
+
+    # A mentions B on A's own card -> notification for B
+    r = client.post(f"/cards/{card_a_id}/comments", json={"body": "heads up @b"}, headers=headers_a)
+    assert r.status_code == 201, r.text
+
+    # B mentions A on B's own card -> notification for A
+    r = client.post(f"/cards/{card_b_id}/comments", json={"body": "thanks @a"}, headers=headers_b)
+    assert r.status_code == 201, r.text
+
+    r = client.get("/notifications/unread_count", headers=headers_b)
+    assert r.status_code == 200, r.text
+    assert r.json() == {"count": 1}
+
+    r = client.get("/notifications", headers=headers_b)
+    assert r.status_code == 200, r.text
+    b_notification_id = r.json()[0]["id"]
+
+    r = client.get("/notifications", headers=headers_a)
+    assert r.status_code == 200, r.text
+    a_notification_id = r.json()[0]["id"]
+
+    # B cannot mark A's notification as read
+    r = client.patch(f"/notifications/{a_notification_id}", headers=headers_b)
+    assert r.status_code == 404, r.text
+
+    # B marks their own notification as read
+    r = client.patch(f"/notifications/{b_notification_id}", headers=headers_b)
+    assert r.status_code == 200, r.text
+    assert r.json()["read"] is True
+
+    r = client.get("/notifications/unread_count", headers=headers_b)
+    assert r.status_code == 200, r.text
+    assert r.json() == {"count": 0}
+
+    r = client.get("/notifications", headers=headers_b)
+    assert r.status_code == 200, r.text
+    notifications = r.json()
+    assert len(notifications) == 1
+    assert notifications[0]["id"] == b_notification_id
+    assert notifications[0]["read"] is True
+
+
 def test_find_mentioned_users_returns_known_and_skips_unknown(session):
     alice = User(email="alice@example.com", username="alice", hashed_password="x")
     bob = User(email="bob@example.com", username="bob", hashed_password="x")

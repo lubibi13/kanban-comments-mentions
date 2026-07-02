@@ -1,5 +1,6 @@
 import re
 
+from markupsafe import Markup, escape
 from sqlmodel import Session, select
 
 from app.models import User
@@ -23,3 +24,15 @@ def find_mentioned_users(body: str, session: Session) -> list[User]:
     if not usernames:
         return []
     return session.exec(select(User).where(User.username.in_(usernames))).all()
+
+
+def linkify_mentions(body: str) -> Markup:
+    pieces = []
+    last_end = 0
+    for match in _MENTION_RE.finditer(body):
+        pieces.append(escape(body[last_end:match.start()]))
+        username = match.group(1)
+        pieces.append(Markup(f'<a href="/users/{username}">@{username}</a>'))
+        last_end = match.end()
+    pieces.append(escape(body[last_end:]))
+    return Markup("").join(pieces)

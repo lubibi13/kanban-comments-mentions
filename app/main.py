@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.db import init_db
-from app.auth import router as auth_router
+from app.auth import router as auth_router, web_router as auth_web_router
 from app.tasks import router as tasks_router
 from app.boards import router as boards_router
 from app.columns import router as columns_router
@@ -19,6 +19,7 @@ def root():
     return {"message": "Task Starter API", "docs": "/docs"}
 
 app.include_router(auth_router)
+app.include_router(auth_web_router)
 app.include_router(tasks_router)
 app.include_router(boards_router)
 app.include_router(columns_router)

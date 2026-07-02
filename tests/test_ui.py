@@ -145,3 +145,65 @@ def test_notifications_feed_lists_unread_and_open_link_marks_read(client):
 
     r = client.get("/notifications/unread_count")
     assert r.json() == {"count": 0}
+
+
+def test_boards_index_page_lists_users_boards(client):
+    register(client, "a@example.com", "s3cret123")
+    login_via_form(client, "a@example.com", "s3cret123")
+
+    r = client.post("/boards/", json={"title": "My Board"})
+    assert r.status_code == 201, r.text
+    board_id = r.json()["id"]
+
+    r = client.get("/boards", headers={"Accept": "text/html"})
+    assert r.status_code == 200, r.text
+    assert "text/html" in r.headers["content-type"]
+    assert f'href="/boards/{board_id}"' in r.text
+    assert "My Board" in r.text
+
+
+def test_new_board_form_page_renders(client):
+    register(client, "a@example.com", "s3cret123")
+    login_via_form(client, "a@example.com", "s3cret123")
+
+    r = client.get("/boards/new")
+    assert r.status_code == 200, r.text
+    assert "text/html" in r.headers["content-type"]
+    assert 'action="/boards/new"' in r.text
+    assert 'name="title"' in r.text
+
+
+def test_create_board_via_form_redirects_to_new_board_page(client):
+    register(client, "a@example.com", "s3cret123")
+    login_via_form(client, "a@example.com", "s3cret123")
+
+    r = client.post("/boards/new", data={"title": "Formed Board"}, follow_redirects=False)
+    assert r.status_code == 303, r.text
+
+    location = r.headers["location"]
+    assert location.startswith("/boards/")
+    board_id = int(location.removeprefix("/boards/"))
+
+    r = client.get(f"/boards/{board_id}")
+    assert r.status_code == 200, r.text
+    assert r.json()["title"] == "Formed Board"
+
+
+def test_board_page_has_add_column_and_add_card_forms(client):
+    register(client, "a@example.com", "s3cret123")
+    login_via_form(client, "a@example.com", "s3cret123")
+    board_id, column_id, card_id = create_board_column_card(client)
+
+    r = client.get(f"/boards/{board_id}", headers={"Accept": "text/html"})
+    assert r.status_code == 200, r.text
+    assert f'action="/boards/{board_id}/columns/form"' in r.text
+    assert f'action="/columns/{column_id}/cards/form"' in r.text
+
+
+def test_root_redirects_logged_in_user_to_boards(client):
+    register(client, "a@example.com", "s3cret123")
+    login_via_form(client, "a@example.com", "s3cret123")
+
+    r = client.get("/", follow_redirects=False)
+    assert r.status_code == 303, r.text
+    assert r.headers["location"] == "/boards"

@@ -31,6 +31,24 @@ class Board(SQLModel, table=True):
     title: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
     user: Optional[User] = Relationship(back_populates="boards")
+    columns: List["Column"] = Relationship(back_populates="board")
+
+class Column(SQLModel, table=True):
+    # explicit plural tablename: "column" is a reserved SQL keyword
+    __tablename__ = "columns"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    board_id: int = Field(foreign_key="board.id")
+    title: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    board: Optional[Board] = Relationship(back_populates="columns")
+    cards: List["Card"] = Relationship(back_populates="column")
+
+class Card(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    column_id: int = Field(foreign_key="columns.id")
+    title: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    column: Optional[Column] = Relationship(back_populates="cards")
 
 # API schemas (non-table)
 class UserCreate(SQLModel):
@@ -71,5 +89,30 @@ class BoardUpdate(SQLModel):
 
 class BoardRead(SQLModel):
     id: int
+    title: str
+    created_at: datetime
+
+class ColumnCreate(SQLModel):
+    title: str
+
+class ColumnUpdate(SQLModel):
+    title: Optional[str] = None
+
+class ColumnRead(SQLModel):
+    id: int
+    board_id: int
+    title: str
+    created_at: datetime
+
+class CardCreate(SQLModel):
+    title: str
+
+class CardUpdate(SQLModel):
+    title: Optional[str] = None
+    column_id: Optional[int] = None
+
+class CardRead(SQLModel):
+    id: int
+    column_id: int
     title: str
     created_at: datetime

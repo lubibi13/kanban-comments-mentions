@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}New board{% endblock %}
+{% block content %}
+<h1>New board</h1>
+<form method="post" action="/boards/new">
+    <input type="text" name="title" placeholder="Board title" required>
+    <button type="submit">Create board</button>
+</form>
+{% endblock %}
